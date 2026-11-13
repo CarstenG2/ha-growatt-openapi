@@ -48,7 +48,8 @@ Undocumented; everything below comes from the script and from calls on 2026-11-1
 3. Device: `POST https://server.growatt.com/panel/getDevicesByPlantList`, form `currPage=1`, `plantId`. First entry in `obj.datas`: `sn` (serial number), `deviceTypeName` (here `mix`), `deviceModel` (here SPH 10000TL3 BH-UP), `lastUpdateTime` (local time of the plant, format `yyyy-MM-dd HH:mm:ss`; time zone in field `timezone`, here 1.0).
 4. Live values: `POST https://server.growatt.com/panel/mix/getMIXStatusData?plantId=<id>`, form `mixSn=<sn>`. Response `obj` with the fields below. Caution: the response contains the keys `vAc1` and `vac1` with the same value; a parser must not fail on this. PowerShell received the response as text rather than as a JSON object.
 5. Daily totals: `POST https://server.growatt.com/panel/mix/getMIXEnergyDayChart`, form `date=<yyyy-MM-dd>`, `plantId`, `mixSn`. Response `obj` with daily totals (numbers as strings) and `charts` (series, not needed).
-6. Logout: `GET https://server.growatt.com/logout`. On 2026-11-13 this returned an error while following the redirect; whether the session was actually ended is unverified.
+6. Dashboard totals (added 2026-11-13, owner decision): `POST https://server.growatt.com/panel/mix/getMIXTotalData?plantId=<id>`, form `mixSn=<sn>`. Response `obj` with today/lifetime totals as strings. Values matched the web dashboard on 2026-11-13 (epvToday 25.2, edischarge1Today 4.1). The Growatt app showed different purchased/sold energy for the same day (4.90/6.50 kWh vs. gridPowerToday 0.8 / etoGridToday 3.8); which is correct is unknown.
+7. Logout: `GET https://server.growatt.com/logout`. On 2026-11-13 this returned an error while following the redirect; whether the session was actually ended is unverified.
 
 ## Sensors
 
@@ -80,10 +81,14 @@ Daily totals from step 5:
 
 | Sensor (Growatt field name) | Assumed meaning | Unit (assumed) |
 |---|---|---|
-| `etouser` | grid import today | kWh |
+| `etouser` | grid import today (portal value; not the app's purchased energy) | kWh |
 | `elocalLoad` | load consumption today | kWh |
 | `eCharge` | battery charged today | kWh |
 | `eAcCharge` | battery charged from grid today | kWh |
+
+Dashboard totals from step 6 (today and lifetime, kWh, `total_increasing`): `epvToday`, `epvTotal`, `etoGridToday`, `etogridTotal`, `gridPowerToday`, `gridPowerTotal`, `edischarge1Today`, `edischarge1Total`, `elocalLoadToday`, `elocalLoadTotal`.
+
+WebSocket live data (checked 2026-11-13, not used): the dashboard can get live data via `wss://dfc.growatt.com:10888` with a token from `GET /panel/genDfcTempToken` (portal session required). For this account Growatt answered "There are no devices under this user that support this feature".
 
 Timestamps:
 

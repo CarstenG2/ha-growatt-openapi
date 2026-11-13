@@ -97,14 +97,18 @@ def _live(
     )
 
 
-def _total(field: str) -> GrowattSensorDescription:
+def _totals(field: str) -> Callable[[GrowattData], Any]:
+    return lambda data: to_float(data.totals.get(field))
+
+
+def _total(field: str, source: str = "day") -> GrowattSensorDescription:
     return GrowattSensorDescription(
         key=field.lower(),
         name=field,
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        value_fn=_day(field),
+        value_fn=_day(field) if source == "day" else _totals(field),
     )
 
 
@@ -139,6 +143,17 @@ SENSORS: tuple[GrowattSensorDescription, ...] = (
     _total("elocalLoad"),
     _total("eCharge"),
     _total("eAcCharge"),
+    # From getMIXTotalData: today and lifetime totals as shown on the portal dashboard.
+    _total("epvToday", "totals"),
+    _total("epvTotal", "totals"),
+    _total("etoGridToday", "totals"),
+    _total("etogridTotal", "totals"),
+    _total("gridPowerToday", "totals"),
+    _total("gridPowerTotal", "totals"),
+    _total("edischarge1Today", "totals"),
+    _total("edischarge1Total", "totals"),
+    _total("elocalLoadToday", "totals"),
+    _total("elocalLoadTotal", "totals"),
     GrowattSensorDescription(
         key="lastupdatetime",
         name="lastUpdateTime",

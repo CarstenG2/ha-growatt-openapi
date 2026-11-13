@@ -25,6 +25,11 @@ STATUS_TEXT = (
 )
 DAY = {"result": 1, "obj": {"etouser": "0.7", "eCharge": "13.1", "eAcCharge": "3.7",
                             "elocalLoad": "10.1", "charts": {"ppv": [0.0]}}}
+TOTALS = {"result": 1, "obj": {"epvToday": "25.2", "epvTotal": "30619.2", "etoGridToday": "3.8",
+                               "etogridTotal": "20460.9", "gridPowerToday": "0.8",
+                               "gridPowerTotal": "950.3", "edischarge1Today": "4.1",
+                               "edischarge1Total": "4363.8", "elocalLoadToday": "11.4",
+                               "elocalLoadTotal": "9850.9"}}
 DEVICES = {"result": 1, "obj": {"datas": [{"sn": "SN1", "deviceModel": "SPH 10000TL3 BH-UP",
                                            "lastUpdateTime": "2026-11-13 17:20:35",
                                            "timezone": 1.0}]}}
@@ -81,6 +86,11 @@ class FakePortal:
             self._no_login()
         return web.json_response(DAY)
 
+    async def totals(self, request):
+        if not self._authorized(request):
+            self._no_login()
+        return web.json_response(TOTALS)
+
     def app(self):
         app = web.Application()
         app.router.add_post("/login", self.login)
@@ -88,6 +98,7 @@ class FakePortal:
         app.router.add_post("/panel/getDevicesByPlantList", self.devices)
         app.router.add_post("/panel/mix/getMIXStatusData", self.status)
         app.router.add_post("/panel/mix/getMIXEnergyDayChart", self.day)
+        app.router.add_post("/panel/mix/getMIXTotalData", self.totals)
         return app
 
 
@@ -132,6 +143,7 @@ async def test_fetch_returns_all_values(portal, session):
     assert data.day_totals == {"etouser": "0.7", "eCharge": "13.1", "eAcCharge": "3.7",
                                "elocalLoad": "10.1"}
     assert data.device_info["lastUpdateTime"] == "2026-11-13 17:20:35"
+    assert data.totals == TOTALS["obj"]
 
 
 async def test_session_is_reused(portal, session):

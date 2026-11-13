@@ -40,10 +40,15 @@ Credentials are stored by Home Assistant in its config entry storage, like any o
 | vAc1 | grid voltage | V |
 | fAc | grid frequency | Hz |
 | status | inverter status, raw value | |
-| etouser | grid import today | kWh |
+| etouser | grid import today, portal value (on 2026-11-13 it matched gridPowerToday, not the app's "purchased energy") | kWh |
 | elocalLoad | load consumption today | kWh |
 | eCharge | battery charged today | kWh |
 | eAcCharge | battery charged from grid today | kWh |
+| epvToday, epvTotal | PV energy today / lifetime | kWh |
+| etoGridToday, etogridTotal | grid export today / lifetime | kWh |
+| gridPowerToday, gridPowerTotal | grid import today / lifetime, portal value | kWh |
+| edischarge1Today, edischarge1Total | battery discharged today / lifetime | kWh |
+| elocalLoadToday, elocalLoadTotal | load consumption today / lifetime | kWh |
 | lastUpdateTime | last datalogger upload | timestamp |
 | Last successful poll | last successful poll by this integration | timestamp |
 

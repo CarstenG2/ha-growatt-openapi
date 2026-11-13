@@ -49,6 +49,7 @@ class GrowattData:
 
     status: dict[str, Any] = field(default_factory=dict)
     day_totals: dict[str, Any] = field(default_factory=dict)
+    totals: dict[str, Any] = field(default_factory=dict)
     device_info: dict[str, Any] = field(default_factory=dict)
 
 
@@ -163,15 +164,30 @@ class GrowattWebClient:
                 "mixSn": device.serial,
             },
         )
+        totals = await self._request(
+            "POST",
+            "/panel/mix/getMIXTotalData",
+            params={"plantId": device.plant_id},
+            data={"mixSn": device.serial},
+        )
         info = await self._device_info(device.plant_id)
         try:
             status_obj = status["obj"]
             day_obj = {k: v for k, v in day["obj"].items() if k != "charts"}
+            totals_obj = totals["obj"]
         except (KeyError, TypeError, AttributeError) as err:
-            raise GrowattError(f"Unexpected data response: {str(status)[:200]}") from err
-        if not isinstance(status_obj, dict):
-            raise GrowattError(f"Unexpected status object: {str(status_obj)[:200]}")
-        return GrowattData(status=status_obj, day_totals=day_obj, device_info=info)
+            raise GrowattError(
+                f"Unexpected data response: status={str(status)[:200]} "
+                f"day={str(day)[:200]} totals={str(totals)[:200]}"
+            ) from err
+        if not isinstance(status_obj, dict) or not isinstance(totals_obj, dict):
+            raise GrowattError(
+                f"Unexpected data objects: status={str(status_obj)[:200]} "
+                f"totals={str(totals_obj)[:200]}"
+            )
+        return GrowattData(
+            status=status_obj, day_totals=day_obj, totals=totals_obj, device_info=info
+        )
 
     async def fetch(self, device: GrowattDevice) -> GrowattData:
         """Fetch all values.
