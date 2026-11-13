@@ -60,7 +60,5 @@ class GrowattWebConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_MODEL: device.model,
                     },
                 )
-            finally:
-                await session.close()
 
         return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA, errors=errors)

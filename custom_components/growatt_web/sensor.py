@@ -127,7 +127,14 @@ SENSORS: tuple[GrowattSensorDescription, ...] = (
     _live("pPv2", None, None),
     _live("vAc1", SensorDeviceClass.VOLTAGE, V),
     _live("fAc", SensorDeviceClass.FREQUENCY, UnitOfFrequency.HERTZ),
-    _live("status", None, None),
+    # Raw inverter status code as delivered (e.g. "5", "6"); text mapping unknown.
+    GrowattSensorDescription(
+        key="status",
+        name="status",
+        value_fn=lambda data: (
+            None if data.status.get("status") in (None, "") else str(data.status["status"])
+        ),
+    ),
     _total("etouser"),
     _total("elocalLoad"),
     _total("eCharge"),
