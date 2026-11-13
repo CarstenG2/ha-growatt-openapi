@@ -14,7 +14,7 @@ The token login of the built-in integration and the official Growatt OpenAPI are
 
 - All values listed below as sensors in Home Assistant, polled every 5 minutes.
 - Credentials only via the Home Assistant setup dialog, never in code.
-- Installation and updates via HACS from a public GitHub repository.
+- Installation and updates by copying the integration folder into the Home Assistant configuration directory and restarting Home Assistant (owner decision 2026-11-13; no HACS, no public repository).
 
 ## Non-goals
 
@@ -29,7 +29,7 @@ The token login of the built-in integration and the official Growatt OpenAPI are
 
 ## Constraints
 
-- Repository: public, `CarstenG2/ha-growatt-web` on GitHub. According to the official HACS docs, HACS cannot install private repositories. Creating and pushing only after explicit approval.
+- Repository: private (owner decision 2026-11-13, to avoid drawing Growatt's attention to the portal API).
 - Home Assistant 2026.10.4, HACS is installed.
 - Sensor names are the original Growatt field names (owner decision 2026-11-13). Everything else in the repository is in English: code, logs, docstrings, README, and setup dialog texts (owner decision 2026-11-13: Growatt and Home Assistant are international).
 - Every exception is logged, no silent `except`. Every network call has an explicit timeout.

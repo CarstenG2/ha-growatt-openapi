@@ -8,9 +8,11 @@ The portal API is undocumented. Sensor names are the original Growatt field name
 
 ## Installation
 
-1. HACS -> Integrations -> three-dot menu -> Custom repositories -> add `https://github.com/CarstenG2/ha-growatt-web` as type "Integration".
-2. Install "Growatt Web" and restart Home Assistant.
+1. Copy the folder `custom_components/growatt_web` into the `custom_components` folder of your Home Assistant configuration directory.
+2. Restart Home Assistant.
 3. Settings -> Devices & services -> Add integration -> "Growatt Web", enter your Growatt portal username and password.
+
+Updates: copy the folder again and restart Home Assistant.
 
 Credentials are stored by Home Assistant in its config entry storage, like any other integration. They are not stored in this repository.
 
