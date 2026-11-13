@@ -1,0 +1,21 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Growatt web portal login",
+        "description": "Credentials of your account on server.growatt.com.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Growatt rejected the login.",
+      "cannot_connect": "Could not reach Growatt or read the inverter data. See the Home Assistant log."
+    },
+    "abort": {
+      "already_configured": "This inverter is already configured."
+    }
+  }
+}
