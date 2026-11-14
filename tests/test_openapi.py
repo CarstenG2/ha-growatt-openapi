@@ -108,10 +108,34 @@ def test_mapping_matches_portal_snapshot():
         "elocalLoadTotal": 9853.9,
     }
     assert data.device_info == {"lastUpdateTime": "2026-11-14 10:06:44", "timezone": 1.0}
-    for unmapped in ("etouser", "eCharge", "eAcCharge"):
-        assert unmapped not in data.day_totals
-    for unmapped in ("gridPowerToday", "gridPowerTotal"):
-        assert unmapped not in data.totals
+
+
+# mix_last_data counters and the portal values read at the same time (2026-11-14 13:54).
+COMPARE_API = {
+    "esystemtoday": 7.300000190734863, "eselftoday": 4.599999904632568, "elocalLoadToday": 4.7,
+    "elocalLoadTotal": 9856.7, "eselftotal": 8906.400390625,
+}
+COMPARE_PORTAL_DAY = {"eCharge": 7.3, "eAcCharge": 2.7, "etouser": 0.1}
+COMPARE_PORTAL_TOTALS = {"gridPowerToday": 0.1, "gridPowerTotal": 950.3}
+
+
+def test_derived_fields_match_portal():
+    data = openapi.to_growatt_data(COMPARE_API, None)
+    for field, value in COMPARE_PORTAL_DAY.items():
+        assert data.day_totals[field] == value
+    for field, value in COMPARE_PORTAL_TOTALS.items():
+        assert data.totals[field] == value
+
+
+def test_derived_fields_missing_input_gives_no_value():
+    data = openapi.to_growatt_data({"esystemtoday": 7.3, "elocalLoadToday": 4.7}, None)
+    assert data.day_totals == {"elocalLoad": 4.7, "eCharge": 7.3}
+    assert "gridPowerToday" not in data.totals and "gridPowerTotal" not in data.totals
+
+
+def test_derived_fields_clipped_at_zero():
+    data = openapi.to_growatt_data({"esystemtoday": 2.0, "eselftoday": 2.1}, None)
+    assert data.day_totals["eAcCharge"] == 0
 
 
 def test_mapping_skips_missing_and_empty_fields():

@@ -50,9 +50,16 @@ TOTAL_FIELDS: dict[str, str] = {
     "elocalLoadToday": "elocalLoadToday",
     "elocalLoadTotal": "elocalLoadTotal",
 }
-# Portal fields without a reliable API equivalent (etouser, eCharge, eAcCharge,
-# gridPowerToday, gridPowerTotal) are deliberately not mapped: no value is
-# better than a wrong one. Open question for the owner.
+# Portal fields the API does not deliver directly. The portal computes them
+# from the same inverter counters (verified against the portal three times on
+# 2026-11-14, exact to 0.1 kWh): (target dict, portal field, minuend, subtrahend).
+DERIVED_FIELDS: tuple[tuple[str, str, str, str | None], ...] = (
+    ("day_totals", "eCharge", "esystemtoday", None),
+    ("day_totals", "eAcCharge", "esystemtoday", "eselftoday"),
+    ("day_totals", "etouser", "elocalLoadToday", "eselftoday"),
+    ("totals", "gridPowerToday", "elocalLoadToday", "eselftoday"),
+    ("totals", "gridPowerTotal", "elocalLoadTotal", "eselftotal"),
+)
 
 _GMT_RE = re.compile(r"^GMT(?:([+-])(\d{1,2})(?::(\d{2}))?)?$")
 
@@ -88,6 +95,15 @@ def _number(value: Any, divisor: float) -> float | int | None:
     return int(rounded) if rounded.is_integer() else rounded
 
 
+def _derived(last: dict[str, Any], minuend: str, subtrahend: str | None) -> float | int | None:
+    """minuend - subtrahend, clipped at 0 like the portal; None if an input is missing."""
+    a = _number(last.get(minuend), 1)
+    b = 0 if subtrahend is None else _number(last.get(subtrahend), 1)
+    if a is None or b is None:
+        return None
+    return _number(max(0.0, a - b), 1)
+
+
 def to_growatt_data(last: dict[str, Any], tz_hours: float | None) -> GrowattData:
     """Translate mix_last_data into the portal-shaped GrowattData the sensors use."""
     data = GrowattData()
@@ -106,6 +122,10 @@ def to_growatt_data(last: dict[str, Any], tz_hours: float | None) -> GrowattData
         value = _number(last.get(api_field), 1)
         if value is not None:
             data.totals[portal_field] = value
+    for target, portal_field, minuend, subtrahend in DERIVED_FIELDS:
+        value = _derived(last, minuend, subtrahend)
+        if value is not None:
+            getattr(data, target)[portal_field] = value
     if last.get("time"):
         data.device_info["lastUpdateTime"] = last["time"]
         if tz_hours is not None:
