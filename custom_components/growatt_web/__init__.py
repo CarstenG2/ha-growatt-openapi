@@ -1,4 +1,4 @@
-"""Growatt Web: read-only Growatt inverter values via the Growatt web portal."""
+"""Growatt Web: read-only Growatt inverter values via the official API, portal as fallback."""
 
 from __future__ import annotations
 
@@ -36,7 +36,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: GrowattWebConfigEntry) -
         client, OpenApiClient(session), device, entry.data.get(CONF_API_TOKEN), save_token
     )
     coordinator = GrowattWebCoordinator(hass, entry, source, device)
-    await coordinator.async_config_entry_first_refresh()
+    # Not async_config_entry_first_refresh: a failed first poll would make Home
+    # Assistant retry the whole setup within seconds, with a fresh controller and
+    # a fresh portal login each time. A failed poll leaves the sensors unavailable;
+    # the controller's own backoff decides when to try again.
+    await coordinator.async_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
