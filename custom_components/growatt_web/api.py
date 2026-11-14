@@ -9,13 +9,15 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Any
+from typing import Any, TypeVar
 
 import aiohttp
 
 _LOGGER = logging.getLogger(__name__)
+T = TypeVar("T")
 
 BASE_URL = "https://server.growatt.com"
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=30)
@@ -113,6 +115,7 @@ class GrowattWebClient:
 
     async def login(self) -> None:
         """Log in. Raises GrowattAuthError if Growatt rejects it."""
+        _LOGGER.info("Growatt portal login")
         self._logged_in = False
         result = await self._request(
             "POST",
@@ -189,18 +192,56 @@ class GrowattWebClient:
             status=status_obj, day_totals=day_obj, totals=totals_obj, device_info=info
         )
 
-    async def fetch(self, device: GrowattDevice) -> GrowattData:
-        """Fetch all values.
+    async def _logged_in_call(self, call: Callable[[], Awaitable[T]]) -> T:
+        """Run a call that needs a session.
 
         Reuses the current session. If it has expired, logs in once more and
-        fetches again within the same call. Any further failure is raised.
+        repeats the call. Any further failure is raised.
         """
         if not self._logged_in:
             await self.login()
-            return await self._fetch(device)
+            return await call()
         try:
-            return await self._fetch(device)
+            return await call()
         except GrowattSessionExpired as err:
             _LOGGER.info("Growatt session expired (%s), logging in again", err)
             await self.login()
-            return await self._fetch(device)
+            return await call()
+
+    async def fetch(self, device: GrowattDevice) -> GrowattData:
+        """Fetch all values through the portal."""
+        return await self._logged_in_call(lambda: self._fetch(device))
+
+    async def read_api_token(self) -> str:
+        """Read the account's OpenAPI token. Empty if none was ever generated."""
+
+        async def call() -> str:
+            result = await self._request("POST", "/set/getUserTokenData")
+            try:
+                if result["result"] != 1:
+                    raise GrowattError(f"getUserTokenData failed: msg={result.get('msg')!r}")
+                return str(result["obj"].get("token") or "")
+            except (KeyError, TypeError, AttributeError) as err:
+                raise GrowattError("getUserTokenData: unexpected response") from err
+
+        token = await self._logged_in_call(call)
+        _LOGGER.info("Read Growatt API token from the portal (%s)", "set" if token else "empty")
+        return token
+
+    async def reset_api_token(self) -> str:
+        """Generate a new OpenAPI token. The previous token stops working."""
+
+        async def call() -> str:
+            result = await self._request("POST", "/set/resetApiToken")
+            try:
+                ok = result["result"] == 1
+                token = str(result.get("msg") or "")
+            except (KeyError, TypeError, AttributeError) as err:
+                raise GrowattError("resetApiToken: unexpected response") from err
+            if not ok or not token:
+                raise GrowattError("resetApiToken: Growatt did not return a new token")
+            return token
+
+        token = await self._logged_in_call(call)
+        _LOGGER.warning("Generated a new Growatt API token; the previous token no longer works")
+        return token
