@@ -1,6 +1,6 @@
 # Growatt Web
 
-Read-only Home Assistant integration for Growatt inverters. It reads the values from the Growatt web portal (`server.growatt.com`) with your normal portal account, the same way the portal's own web pages do.
+Read-only Home Assistant integration for Growatt inverters. It reads the values from the official Growatt OpenAPI with your account's API token, which it obtains itself through the Growatt web portal (`server.growatt.com`); the portal is also the fallback source.
 
 Tested with an SPH 10000TL3 BH-UP (Growatt device type `mix`). Other device types are not supported.
 
@@ -18,7 +18,11 @@ Credentials are stored by Home Assistant in its config entry storage, like any o
 
 ## Behaviour
 
-- Polls every 5 minutes. The portal session is reused; if it has expired, the integration logs in once more within the same poll.
+- Values come from the official Growatt OpenAPI (`openapi.growatt.com`) with the account's API token. The integration reads the token itself through a portal login at setup and stores it in the config entry; in normal operation there is no portal login at all.
+- The token counts as dead only if Growatt answers validly with "no privilege" (error 10011) or an empty plant list. Then the integration logs in to the portal and reads the current token; if it is the same dead token, it generates a new one (the previous token stops working). Network errors, timeouts and Growatt's rate limit (error 10012) never trigger this.
+- If even a newly generated token does not work, values come from the web portal (username and password) until a working token appears. If obtaining a token fails, the next attempt waits 5, 10, 20, 40 minutes, then at most once per hour.
+- In API operation, `etouser`, `eCharge`, `eAcCharge`, `gridPowerToday` and `gridPowerTotal` have no value: the API has no field that matches the portal value.
+- Polls every 5 minutes. In portal operation the portal session is reused; if it has expired, the integration logs in once more within the same poll.
 - If a poll fails, all sensors become unavailable until the next successful poll. There are no extra retries.
 - `Last successful poll` keeps the time of the last successful poll even while polling fails.
 - `lastUpdateTime` is the time the inverter's datalogger last reported to Growatt. If it stops advancing while polls succeed, Growatt is returning stale values.

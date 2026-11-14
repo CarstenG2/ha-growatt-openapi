@@ -8,8 +8,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .api import GrowattDevice, GrowattWebClient
-from .const import CONF_MODEL, CONF_PLANT_ID, CONF_SERIAL
+from .const import CONF_API_TOKEN, CONF_MODEL, CONF_PLANT_ID, CONF_SERIAL
 from .coordinator import GrowattWebCoordinator
+from .openapi import OpenApiClient
+from .source import SourceController
 
 PLATFORMS = [Platform.SENSOR]
 
@@ -26,7 +28,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: GrowattWebConfigEntry) -
         serial=entry.data[CONF_SERIAL],
         model=entry.data.get(CONF_MODEL),
     )
-    coordinator = GrowattWebCoordinator(hass, entry, client, device)
+
+    def save_token(token: str) -> None:
+        hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_API_TOKEN: token})
+
+    source = SourceController(
+        client, OpenApiClient(session), device, entry.data.get(CONF_API_TOKEN), save_token
+    )
+    coordinator = GrowattWebCoordinator(hass, entry, source, device)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
