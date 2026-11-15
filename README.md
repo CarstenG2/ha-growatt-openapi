@@ -35,9 +35,20 @@ documents for SPH inverters.
 
 ## Supported devices
 
-Growatt SPH ("mix", device type 5 in the Growatt API) hybrid inverters with a Growatt
-datalogger (ShineWiFi, ShineLAN) and an account on `server.growatt.com`.
-Developed and used with an **SPH 10000TL3 BH-UP** on Home Assistant 2026.10.
+Growatt SPH hybrid inverters ("mix", device type 5 in the Growatt API) with a
+Growatt datalogger (ShineWiFi, ShineLAN) and an account on `server.growatt.com`.
+According to the [official Growatt device type table](https://www.showdoc.com.cn/262556420217021/11038523729597006),
+these series use the SPH API:
+
+- SPH 3000-6000 (SPH 3000, 3600, 4000, 4600, 5000, 6000)
+- SPH 3000-6000TL BL-UP
+- SPH 10000TL-X
+- SPH 4000-10000TL3 BH
+- SPH 4000-10000TL3 BH-UP
+- SPH 3000-6000TL BL-US
+
+Other Growatt series (SPA, MIN, MAX, MIC, MOD, MID, WIT, SPF) use other API
+endpoints and are not supported.
 
 ## Installation
 
