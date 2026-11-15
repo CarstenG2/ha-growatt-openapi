@@ -43,6 +43,8 @@ class FakePortal:
         self.logins = 0
         self.valid_sessions = set()
         self.next_session = 0
+        self.api_token = "T1"
+        self.resets = 0
 
     def expire_all(self):
         self.valid_sessions.clear()
@@ -91,8 +93,25 @@ class FakePortal:
             self._no_login()
         return web.json_response(TOTALS)
 
+    async def token_data(self, request):
+        if not self._authorized(request):
+            self._no_login()
+        # Shape as captured on 2026-11-14 (other fields omitted), served as text/html.
+        body = json.dumps({"result": 1, "msg": "", "obj": {"token": self.api_token, "status": "0"}})
+        return web.Response(text=body, content_type="text/html")
+
+    async def reset_token(self, request):
+        if not self._authorized(request):
+            self._no_login()
+        self.resets += 1
+        self.api_token = f"T{self.resets + 1}"
+        return web.Response(text=json.dumps({"result": 1, "msg": self.api_token}),
+                            content_type="text/html")
+
     def app(self):
         app = web.Application()
+        app.router.add_post("/set/getUserTokenData", self.token_data)
+        app.router.add_post("/set/resetApiToken", self.reset_token)
         app.router.add_post("/login", self.login)
         app.router.add_get("/index/getPlantListTitle", self.plants)
         app.router.add_post("/panel/getDevicesByPlantList", self.devices)
@@ -172,6 +191,41 @@ async def test_failed_relogin_raises(portal, session):
     portal.password = "changed"
     with pytest.raises(api.GrowattAuthError):
         await client.fetch(device)
+    assert portal.logins == 2
+
+
+async def test_read_api_token_logs_in_once(portal, session):
+    client = make_client(session, portal)
+    assert await client.read_api_token() == "T1"
+    assert await client.read_api_token() == "T1"
+    assert portal.logins == 1
+
+
+async def test_read_api_token_reuses_session_after_fetch(portal, session):
+    client = make_client(session, portal)
+    await client.fetch(api.GrowattDevice("123", "SN1"))
+    assert await client.read_api_token() == "T1"
+    assert portal.logins == 1
+
+
+async def test_read_api_token_may_be_empty(portal, session):
+    portal.api_token = ""
+    client = make_client(session, portal)
+    assert await client.read_api_token() == ""
+
+
+async def test_reset_api_token_returns_new_token(portal, session):
+    client = make_client(session, portal)
+    assert await client.reset_api_token() == "T2"
+    assert await client.read_api_token() == "T2"
+    assert portal.resets == 1
+
+
+async def test_read_token_relogs_on_expired_session(portal, session):
+    client = make_client(session, portal)
+    await client.read_api_token()
+    portal.expire_all()
+    assert await client.read_api_token() == "T1"
     assert portal.logins == 2
 
 
