@@ -6,7 +6,7 @@ set_discharge_periods:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -89,7 +89,7 @@ set_charge_periods:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -178,7 +178,7 @@ set_export_limit:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -204,7 +204,7 @@ set_inverter_on_off:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -221,7 +221,7 @@ set_time:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -238,7 +238,7 @@ set_grid_voltage_high:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -257,7 +257,7 @@ set_grid_voltage_low:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -276,7 +276,7 @@ set_off_grid_enable:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -293,7 +293,7 @@ set_off_grid_frequency:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -313,7 +313,7 @@ set_off_grid_voltage:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -334,7 +334,7 @@ set_reactive_power_rate:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -351,7 +351,7 @@ set_power_factor:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -368,7 +368,7 @@ set_discharge_stop_soc:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -388,7 +388,7 @@ set_load_first_output:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -408,7 +408,7 @@ set_single_phase_export_limit:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -425,7 +425,7 @@ write_parameter:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -448,7 +448,7 @@ read_parameter:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -479,7 +479,7 @@ get_history:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"
@@ -517,7 +517,7 @@ get_alarms:
   fields:
     config_entry_id:
       name: "Config entry"
-      description: "Growatt Web entry to use; only needed with more than one inverter."
+      description: "Growatt OpenAPI entry to use; only needed with more than one inverter."
       selector:
         config_entry:
           integration: "growatt_web"

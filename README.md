@@ -1,21 +1,21 @@
-# Growatt Web for Home Assistant
+# Growatt OpenAPI for Home Assistant
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
-[![Release](https://img.shields.io/github/v/release/CarstenG2/ha-growatt-web?label=Release&color=blue)](https://github.com/CarstenG2/ha-growatt-web/releases/latest)
-[![Validate](https://github.com/CarstenG2/ha-growatt-web/actions/workflows/validate.yml/badge.svg)](https://github.com/CarstenG2/ha-growatt-web/actions/workflows/validate.yml)
+[![Release](https://img.shields.io/github/v/release/CarstenG2/ha-growatt-openapi?label=Release&color=blue)](https://github.com/CarstenG2/ha-growatt-openapi/releases/latest)
+[![Validate](https://github.com/CarstenG2/ha-growatt-openapi/actions/workflows/validate.yml/badge.svg)](https://github.com/CarstenG2/ha-growatt-openapi/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **424 values to read, 15 settings to write, every SPH command of the official Growatt API.**
 It might be the most complete Growatt integration for Home Assistant.
 
-Growatt Web connects Growatt SPH hybrid inverters through the **official Growatt OpenAPI**,
+Growatt OpenAPI connects Growatt SPH hybrid inverters through the **official Growatt OpenAPI**,
 with nothing more than your Growatt username and password. It fetches the API token itself,
 renews it only when Growatt really rejects it, and falls back to the Growatt web portal so
 your sensors keep working when the API does not.
 
 ## What makes it different
 
-| | Growatt Web |
+| | Growatt OpenAPI |
 |---|---|
 | Live values | all **224** fields of the official live data (`mix_last_data`) as sensors |
 | Settings | all **200** fields of the inverter settings (`mix_data_info`) as diagnostic sensors |
@@ -30,7 +30,7 @@ your sensors keep working when the API does not.
 
 The core Home Assistant integration `growatt_server` offers, according to its documentation,
 charge power, charge stop SOC, discharge power, discharge stop SOC, an AC charge switch and
-time segment actions for token users. Growatt Web covers every setting type the official API
+time segment actions for token users. Growatt OpenAPI covers every setting type the official API
 documents for SPH inverters.
 
 ## Supported devices
@@ -43,21 +43,21 @@ Developed and used with an **SPH 10000TL3 BH-UP** on Home Assistant 2026.10.
 
 ### HACS
 
-[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=CarstenG2&repository=ha-growatt-web&category=integration)
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=CarstenG2&repository=ha-growatt-openapi&category=integration)
 
 1. **HACS** -> menu -> **Custom repositories**
-2. Add `https://github.com/CarstenG2/ha-growatt-web`, type **Integration**
-3. Search for **Growatt Web** -> **Download**
+2. Add `https://github.com/CarstenG2/ha-growatt-openapi`, type **Integration**
+3. Search for **Growatt OpenAPI** -> **Download**
 4. Restart Home Assistant
 
 ### Manual
 
-1. Copy `custom_components/growatt_web` from the [latest release](https://github.com/CarstenG2/ha-growatt-web/releases/latest) into `config/custom_components/`
+1. Copy `custom_components/growatt_web` from the [latest release](https://github.com/CarstenG2/ha-growatt-openapi/releases/latest) into `config/custom_components/`
 2. Restart Home Assistant
 
 ## Setup
 
-**Settings** -> **Devices & services** -> **Add integration** -> **Growatt Web**, then enter the
+**Settings** -> **Devices & services** -> **Add integration** -> **Growatt OpenAPI**, then enter the
 username and password of your Growatt account (`server.growatt.com`). The integration finds
 the inverter, reads the API token and starts polling. Credentials and token are kept in Home
 Assistant's config entry storage, like for any other integration.
@@ -68,7 +68,7 @@ Assistant's config entry storage, like for any other integration.
   and energies, battery management current and temperature), the portal's daily figures,
   the datalogger time and the time of the last successful poll.
 - **Disabled after setup:** every other live value and all settings. Enable the ones you need
-  under **Settings** -> **Devices & services** -> **Growatt Web** -> **Entities**.
+  under **Settings** -> **Devices & services** -> **Growatt OpenAPI** -> **Entities**.
 - Entity names are the official API field names, so every value can be looked up in the
   [Growatt OpenAPI documentation](https://www.showdoc.com.cn/262556420217021).
 
@@ -125,7 +125,7 @@ with an error message.
 
 ## Portal daily figures
 
-The Growatt portal shows some daily values the API does not deliver. Growatt Web computes
+The Growatt portal shows some daily values the API does not deliver. Growatt OpenAPI computes
 them from the API counters exactly like the portal (checked against the portal three times):
 
 | Entity | Meaning | Computed as |
@@ -149,7 +149,7 @@ logger:
 
 Then reload the integration and check **Settings** -> **System** -> **Logs**. Every portal login
 and every write is logged at info level. Please include the log and your inverter model when
-you [open an issue](https://github.com/CarstenG2/ha-growatt-web/issues).
+you [open an issue](https://github.com/CarstenG2/ha-growatt-openapi/issues).
 
 ## Development
 

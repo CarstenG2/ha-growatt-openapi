@@ -11,7 +11,7 @@ unit follows the measured fields of the same kind. Fields without a unit are sho
 ## Live data (`mix_last_data`, every 5 minutes)
 
 224 fields. Enabled by default: the fields marked **on**; all others are created disabled
-and can be enabled under *Settings > Devices & services > Growatt Web > Entities*.
+and can be enabled under *Settings > Devices & services > Growatt OpenAPI > Entities*.
 The enabled power entities show kW (the API value in W divided by 1000), as they did before
 the catalog existed, so their history stays continuous.
 

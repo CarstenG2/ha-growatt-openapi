@@ -21,7 +21,7 @@ writes = importlib.import_module("gw.writes")
 
 ENTRY = {
     "name": "Config entry",
-    "description": "Growatt Web entry to use; only needed with more than one inverter.",
+    "description": "Growatt OpenAPI entry to use; only needed with more than one inverter.",
     "selector": {"config_entry": {"integration": "growatt_web"}},
 }
 

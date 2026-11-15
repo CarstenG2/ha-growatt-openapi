@@ -1,4 +1,4 @@
-"""Actions of the Growatt Web integration: every SPH setting type, plus raw API access."""
+"""Actions of the Growatt OpenAPI integration: every SPH setting type, plus raw API access."""
 
 from __future__ import annotations
 
@@ -50,9 +50,9 @@ def _coordinator(hass: HomeAssistant, call: ServiceCall) -> Any:
         entries = [e for e in entries if e.entry_id == wanted]
     if len(entries) != 1:
         raise ServiceValidationError(
-            "Name the Growatt Web entry with config_entry_id"
+            "Name the Growatt OpenAPI entry with config_entry_id"
             if len(entries) > 1
-            else "No loaded Growatt Web entry found"
+            else "No loaded Growatt OpenAPI entry found"
         )
     return entries[0].runtime_data
 

@@ -1,13 +1,13 @@
 {
   "domain": "growatt_web",
-  "name": "Growatt Web",
+  "name": "Growatt OpenAPI",
   "codeowners": [
     "@CarstenG2"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/CarstenG2/ha-growatt-web",
+  "documentation": "https://github.com/CarstenG2/ha-growatt-openapi",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/CarstenG2/ha-growatt-web/issues",
+  "issue_tracker": "https://github.com/CarstenG2/ha-growatt-openapi/issues",
   "requirements": [],
   "version": "0.3.0"
 }
