@@ -44,4 +44,4 @@ jobs:
         with:
           python-version: "3.14"
       - run: pip install pytest-homeassistant-custom-component
-      - run: pytest -o asyncio_mode=auto tests_ha
+      - run: python -m pytest -o asyncio_mode=auto tests_ha

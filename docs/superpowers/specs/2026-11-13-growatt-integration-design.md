@@ -6,7 +6,7 @@ Status: 2026-11-13, draft for approval.
 
 The built-in Home Assistant integration `growatt_server` fails repeatedly. On 2026-11-13 it stopped delivering values; after a reload, login failed with "Growatt login failed: 507". At the same time, logging in to the Growatt web portal (`server.growatt.com`) with the same account worked, and all values were available there. This was shown by an existing PowerShell script that uses the web portal, run successfully on 2026-11-13.
 
-The new integration `ha-growatt-web` reads the values via exactly this web portal path and provides them as sensors in Home Assistant. For the owner's installation it replaces the built-in integration.
+The new integration `ha-growatt-openapi` reads the values via exactly this web portal path and provides them as sensors in Home Assistant. For the owner's installation it replaces the built-in integration.
 
 The token login of the built-in integration and the official Growatt OpenAPI are not an option: according to the Home Assistant docs, token login is only intended for MIN/TLX inverters. The target inverter is an SPH 10000TL3 BH-UP (Growatt device type `mix`).
 
@@ -116,7 +116,7 @@ The second timestamp shows whether the inverter's datalogger still reports to Gr
 
 ## Decided by the author, not explicitly by the owner
 
-- Entity IDs prefixed with `growatt_web_` (device name "Growatt Web").
+- Entity IDs prefixed with `growatt_openapi_` (device name "Growatt OpenAPI"; installations from before the rename keep `growatt_web_`).
 
 ## Left to the builder
 

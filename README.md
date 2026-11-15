@@ -170,7 +170,7 @@ pip install aiohttp pytest pytest-asyncio
 pytest -o asyncio_mode=auto tests            # clients, token handling, setting types
 
 pip install pytest-homeassistant-custom-component
-pytest -o asyncio_mode=auto tests_ha         # setup, entities and actions in Home Assistant
+python -m pytest -o asyncio_mode=auto tests_ha         # setup, entities and actions in Home Assistant
 ```
 
 `custom_components/growatt_web/catalog.py`, `docs/attributes.md`, `services.yaml` and

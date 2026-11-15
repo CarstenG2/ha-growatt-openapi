@@ -1,4 +1,4 @@
-"""Growatt Web: Growatt SPH inverter values and settings via the official API, portal as fallback."""
+"""Growatt OpenAPI: Growatt SPH inverter values and settings via the official API, portal as fallback."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ type GrowattWebConfigEntry = ConfigEntry[GrowattWebCoordinator]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: GrowattWebConfigEntry) -> bool:
-    """Set up Growatt Web from a config entry."""
+    """Set up Growatt OpenAPI from a config entry."""
     # A dedicated session: the portal login lives in this session's cookie jar.
     session = async_create_clientsession(hass)
     client = GrowattWebClient(session, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
