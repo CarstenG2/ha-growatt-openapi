@@ -1,4 +1,4 @@
-"""Sensors for the Growatt Web integration.
+"""Sensors for the Growatt OpenAPI integration.
 
 Sensor names are the original Growatt field names. Units are assumptions
 derived from the field names and from a plausibility check; Growatt does
@@ -240,7 +240,7 @@ async def async_setup_entry(
 def _device_info(coordinator: GrowattWebCoordinator) -> DeviceInfo:
     return DeviceInfo(
         identifiers={(DOMAIN, coordinator.device.serial)},
-        name="Growatt Web",
+        name="Growatt OpenAPI",
         manufacturer="Growatt",
         model=coordinator.device.model,
         serial_number=coordinator.device.serial,

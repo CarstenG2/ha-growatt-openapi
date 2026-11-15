@@ -1,4 +1,4 @@
-"""Polling coordinator for the Growatt Web integration."""
+"""Polling coordinator for the Growatt OpenAPI integration."""
 
 from __future__ import annotations
 

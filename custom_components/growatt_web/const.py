@@ -1,4 +1,4 @@
-"""Constants for the Growatt Web integration."""
+"""Constants for the Growatt OpenAPI integration."""
 
 from datetime import timedelta
 

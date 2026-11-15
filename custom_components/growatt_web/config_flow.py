@@ -1,4 +1,4 @@
-"""Config flow for the Growatt Web integration."""
+"""Config flow for the Growatt OpenAPI integration."""
 
 from __future__ import annotations
 

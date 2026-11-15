@@ -1,4 +1,4 @@
-# Growatt Web: official API with token as primary source -- Design
+# Growatt OpenAPI: official API with token as primary source -- Design
 
 Date: 2026-11-14. Status: draft for owner approval.
 
