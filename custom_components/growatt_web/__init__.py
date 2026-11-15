@@ -1,4 +1,4 @@
-"""Growatt Web: read-only Growatt inverter values via the official API, portal as fallback."""
+"""Growatt Web: Growatt SPH inverter values and settings via the official API, portal as fallback."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from .api import GrowattDevice, GrowattWebClient
 from .const import CONF_API_TOKEN, CONF_MODEL, CONF_PLANT_ID, CONF_SERIAL
 from .coordinator import GrowattWebCoordinator
 from .openapi import OpenApiClient
+from .services import async_register_services
 from .source import SourceController
 
 PLATFORMS = [Platform.SENSOR]
@@ -43,6 +44,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: GrowattWebConfigEntry) -
     await coordinator.async_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    async_register_services(hass)
     return True
 
 

@@ -20,6 +20,10 @@ MODE_API = "api"
 MODE_PORTAL = "portal"
 # Waits before the next token recovery attempt after a failed one (seconds).
 RECOVERY_DELAYS = (300, 600, 1200, 2400, 3600)
+# Settings (mix_data_info) are read every SETTINGS_INTERVAL and again after a write,
+# but never twice within RATE_LIMIT (Growatt allows one call per endpoint per 5 min).
+SETTINGS_INTERVAL = 1800
+RATE_LIMIT = 300
 
 
 class SourceController:
@@ -48,6 +52,9 @@ class SourceController:
         self._next_recovery = float("-inf")
         self._tz: float | None = None
         self._tz_loaded = False
+        self._settings: dict[str, Any] = {}
+        self._settings_read_at = float("-inf")
+        self._settings_due = True
 
     @property
     def mode(self) -> str:
@@ -78,7 +85,49 @@ class SourceController:
                 raise
             except GrowattError as err:
                 _LOGGER.warning("Growatt plant time zone not available yet: %s", err)
-        return to_growatt_data(last, self._tz)
+        data = to_growatt_data(last, self._tz)
+        await self._refresh_settings(token)
+        data.settings = dict(self._settings)
+        return data
+
+    async def _refresh_settings(self, token: str) -> None:
+        now = self._clock()
+        if now - self._settings_read_at < RATE_LIMIT:
+            return
+        if not self._settings_due and now - self._settings_read_at < SETTINGS_INTERVAL:
+            return
+        self._settings_read_at = now
+        try:
+            self._settings = await self._openapi.data_info(token, self._device.serial)
+            self._settings_due = False
+        except GrowattTokenDead:
+            raise
+        except GrowattError as err:
+            _LOGGER.warning("Reading the Growatt settings failed, keeping the last values: %s", err)
+
+    def _api_token(self) -> str:
+        if self._mode != MODE_API or not self._token:
+            raise GrowattError("This needs the official Growatt API, which is not available right now")
+        return self._token
+
+    async def write(self, type_id: str, params: list[str]) -> Any:
+        """Set an inverter parameter through the official API; settings are re-read next poll."""
+        result = await self._openapi.write(self._api_token(), self._device.serial, type_id, params)
+        self._settings_due = True
+        return result
+
+    async def read_parameter(self, param_id: str, start_addr: int, end_addr: int) -> Any:
+        return await self._openapi.read_parameter(
+            self._api_token(), self._device.serial, param_id, start_addr, end_addr
+        )
+
+    async def history(self, start_date: str, end_date: str, page: int, perpage: int) -> Any:
+        return await self._openapi.history(
+            self._api_token(), self._device.serial, start_date, end_date, page, perpage
+        )
+
+    async def alarms(self, date: str | None, page: int, perpage: int) -> Any:
+        return await self._openapi.alarms(self._api_token(), self._device.serial, date, page, perpage)
 
     async def _token_usable(self, token: str) -> bool:
         """True if the token works, False if dead. A disturbance raises."""

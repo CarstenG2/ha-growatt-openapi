@@ -66,6 +66,21 @@ class FakeApi:
         self._check("tz", token)
         return 1.0
 
+    # Settings and writes are recorded separately so the call lists of the token
+    # tests above stay as they are.
+    info_calls: list
+    info_fail = None
+
+    async def data_info(self, token, serial):
+        self.__dict__.setdefault("info_calls", []).append(token)
+        if self.info_fail:
+            raise self.info_fail
+        return {"chargePowerCommand": 20, "acChargeEnable": 0}
+
+    async def write(self, token, serial, type_id, params):
+        self.__dict__.setdefault("writes", []).append((token, serial, type_id, params))
+        return ""
+
 
 class Clock:
     def __init__(self):
@@ -284,3 +299,51 @@ async def test_restart_with_dead_own_token_generates_at_most_once():
     for _ in range(5):
         await ctrl.fetch()
     assert portal.resets == 1
+
+
+async def test_settings_read_with_first_poll_then_every_30_minutes():
+    clock = Clock()
+    api_ = FakeApi()
+    ctrl, _ = make(api_=api_, clock=clock)
+    data = await ctrl.fetch()
+    assert data.settings == {"chargePowerCommand": 20, "acChargeEnable": 0}
+    assert data.api["soc"] == LAST["soc"]
+    clock.now += 300
+    data = await ctrl.fetch()
+    assert len(api_.info_calls) == 1
+    assert data.settings["chargePowerCommand"] == 20  # cached values stay
+    clock.now += 1500
+    await ctrl.fetch()
+    assert len(api_.info_calls) == 2
+
+
+async def test_write_rereads_settings_but_not_within_5_minutes():
+    clock = Clock()
+    api_ = FakeApi()
+    ctrl, _ = make(api_=api_, clock=clock)
+    await ctrl.fetch()
+    await ctrl.write("pv_on_off", ["0001"])
+    assert api_.writes == [("T1", DEVICE.serial, "pv_on_off", ["0001"])]
+    clock.now += 100
+    await ctrl.fetch()
+    assert len(api_.info_calls) == 1  # rate limit: not yet
+    clock.now += 200
+    await ctrl.fetch()
+    assert len(api_.info_calls) == 2
+
+
+async def test_failed_settings_read_keeps_poll_and_last_values():
+    clock = Clock()
+    api_ = FakeApi()
+    ctrl, _ = make(api_=api_, clock=clock)
+    await ctrl.fetch()
+    api_.info_fail = api.GrowattError("10012")
+    clock.now += 1800
+    data = await ctrl.fetch()
+    assert data.settings["chargePowerCommand"] == 20
+
+
+async def test_write_needs_api_mode():
+    ctrl, _ = make(token=None, portal=FakePortal(token=""), api_=FakeApi(good=()))
+    with pytest.raises(api.GrowattError):
+        await ctrl.write("pv_on_off", ["0001"])

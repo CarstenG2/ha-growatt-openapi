@@ -61,8 +61,15 @@ class FakeOpenApi:
             {"error_code": 0, "error_msg": "", "data": LAST}
         )
 
+    async def mix_set(self, request):
+        self.written = dict(await request.post())
+        return self._check(request) or web.json_response(
+            {"error_code": 0, "error_msg": "Set Successful mix return", "data": ""}
+        )
+
     def app(self):
         app = web.Application()
+        app.router.add_post("/v1/mixSet", self.mix_set)
         app.router.add_get("/v1/plant/list", self.plant_list)
         app.router.add_get("/v1/plant/details", self.plant_details)
         app.router.add_post("/v1/device/mix/mix_last_data", self.last_data)
@@ -198,3 +205,19 @@ async def test_unreachable_is_disturbance(session):
     with pytest.raises(api.GrowattError) as info:
         await client.plants(GOOD)
     assert not isinstance(info.value, openapi.GrowattTokenDead)
+
+
+async def test_write_sends_type_and_all_18_params(fake, session):
+    client = openapi.OpenApiClient(session, fake.base_url)
+    await client.write(GOOD, "SN1", "pv_on_off", ["0001"])
+    assert fake.written["mix_sn"] == "SN1"
+    assert fake.written["type"] == "pv_on_off"
+    assert fake.written["param1"] == "0001"
+    assert [fake.written[f"param{i}"] for i in range(2, 19)] == [""] * 17
+
+
+async def test_write_error_code_is_raised(fake, session):
+    fake.code = 10008  # parameter value out of range
+    client = openapi.OpenApiClient(session, fake.base_url)
+    with pytest.raises(api.GrowattError, match="10008"):
+        await client.write(GOOD, "SN1", "pv_on_off", ["0001"])
