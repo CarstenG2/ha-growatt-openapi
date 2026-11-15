@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -28,6 +28,7 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTemperature,
 )
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -35,6 +36,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import GrowattWebConfigEntry
 from .api import GrowattData
+from .catalog import LIVE_FIELDS, SETTING_FIELDS, Field
 from .const import DOMAIN
 from .coordinator import GrowattWebCoordinator
 
@@ -171,6 +173,58 @@ SENSORS: tuple[GrowattSensorDescription, ...] = (
 )
 
 
+# Existing entities keep their unique key (history); their name is the API field name.
+API_NAME = {f.legacy_key: f.name for f in LIVE_FIELDS if f.legacy_key}
+
+UNIT_CLASS: dict[str, tuple[SensorDeviceClass | None, SensorStateClass | None]] = {
+    "W": (SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT),
+    "V": (SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT),
+    "A": (SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT),
+    "°C": (SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT),
+    "%": (None, SensorStateClass.MEASUREMENT),
+    "Hz": (SensorDeviceClass.FREQUENCY, SensorStateClass.MEASUREMENT),
+    "kWh": (SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING),
+}
+MAX_STATE = 255
+
+
+def raw_value(field: Field, value: Any) -> Any:
+    """State of a catalog field: a number for numeric fields, else text."""
+    if value is None or value == "":
+        return None
+    if field.kind == "number":
+        return to_float(value)
+    text = str(value)
+    return text[:MAX_STATE]
+
+
+def _field_description(field: Field, settings: bool) -> GrowattSensorDescription:
+    device_class, state_class = UNIT_CLASS.get(field.unit or "", (None, None))
+    source = "settings" if settings else "api"
+    return GrowattSensorDescription(
+        key=f"{source}_{field.name.lower()}",
+        name=field.name,
+        device_class=device_class,
+        state_class=state_class,
+        native_unit_of_measurement=field.unit,
+        entity_registry_enabled_default=False,
+        entity_category=EntityCategory.DIAGNOSTIC if settings else None,
+        value_fn=lambda data, f=field, s=settings: raw_value(
+            f, (data.settings if s else data.api).get(f.name)
+        ),
+    )
+
+
+def all_descriptions() -> list[GrowattSensorDescription]:
+    """Existing sensors (renamed to API names) plus every other catalog field, disabled."""
+    out = [
+        replace(d, name=API_NAME[d.key]) if d.key in API_NAME else d for d in SENSORS
+    ]
+    out += [_field_description(f, False) for f in LIVE_FIELDS if not f.legacy_key]
+    out += [_field_description(f, True) for f in SETTING_FIELDS]
+    return out
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: GrowattWebConfigEntry,
@@ -178,7 +232,7 @@ async def async_setup_entry(
 ) -> None:
     """Create all sensors."""
     coordinator = entry.runtime_data
-    entities: list[SensorEntity] = [GrowattSensor(coordinator, d) for d in SENSORS]
+    entities: list[SensorEntity] = [GrowattSensor(coordinator, d) for d in all_descriptions()]
     entities.append(LastSuccessfulPollSensor(coordinator))
     async_add_entities(entities)
 

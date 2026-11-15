@@ -53,6 +53,10 @@ class GrowattData:
     day_totals: dict[str, Any] = field(default_factory=dict)
     totals: dict[str, Any] = field(default_factory=dict)
     device_info: dict[str, Any] = field(default_factory=dict)
+    # Raw official API data, empty in portal operation: mix_last_data and the
+    # last mix_data_info read (settings are read less often, see source.py).
+    api: dict[str, Any] = field(default_factory=dict)
+    settings: dict[str, Any] = field(default_factory=dict)
 
 
 def parse_json(text: str) -> Any:

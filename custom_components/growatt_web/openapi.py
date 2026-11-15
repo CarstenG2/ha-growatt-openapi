@@ -21,6 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 
 OPENAPI_URL = "https://openapi.growatt.com/v1/"
 ERROR_NO_PRIVILEGE = 10011
+MAX_PARAMS = 18  # mixSet takes param1..param18
 
 # API field -> (portal field, divisor). Verified against the portal on 2026-11-14.
 STATUS_FIELDS: dict[str, tuple[str, float]] = {
@@ -112,6 +113,7 @@ def _derived(last: dict[str, Any], minuend: str, subtrahend: str | None) -> floa
 def to_growatt_data(last: dict[str, Any], tz_hours: float | None) -> GrowattData:
     """Translate mix_last_data into the portal-shaped GrowattData the sensors use."""
     data = GrowattData()
+    data.api = dict(last)
     for api_field, (portal_field, divisor) in STATUS_FIELDS.items():
         value = _number(last.get(api_field), divisor)
         if value is not None:
@@ -196,6 +198,65 @@ class OpenApiClient:
         if not isinstance(data, dict) or not data:
             raise GrowattError(f"OpenAPI mix_last_data: unexpected data {str(data)[:200]}")
         return data
+
+    async def data_info(self, token: str, serial: str) -> dict[str, Any]:
+        """Settings of a SPH inverter (mix_data_info)."""
+        data = await self._request(
+            "GET", "device/mix/mix_data_info", token, params={"device_sn": serial}
+        )
+        if not isinstance(data, dict) or not data:
+            raise GrowattError(f"OpenAPI mix_data_info: unexpected data {str(data)[:200]}")
+        return data
+
+    async def write(self, token: str, serial: str, type_id: str, params: list[str]) -> Any:
+        """Set a SPH parameter (mixSet). ``params`` are param1..param18, "" if unused."""
+        if len(params) > MAX_PARAMS:
+            raise GrowattError(f"mixSet takes at most {MAX_PARAMS} parameters, got {len(params)}")
+        form = {"mix_sn": serial, "type": type_id}
+        for i in range(MAX_PARAMS):
+            form[f"param{i + 1}"] = params[i] if i < len(params) else ""
+        _LOGGER.info("Growatt write %s %s", type_id, [p for p in params if p != ""])
+        return await self._request("POST", "mixSet", token, data=form)
+
+    async def read_parameter(
+        self, token: str, serial: str, param_id: str, start_addr: int = 0, end_addr: int = 0
+    ) -> Any:
+        """Read one SPH setting from the inverter (readMixParam)."""
+        return await self._request(
+            "POST",
+            "readMixParam",
+            token,
+            data={
+                "device_sn": serial,
+                "paramId": param_id,
+                "startAddr": start_addr,
+                "endAddr": end_addr,
+            },
+        )
+
+    async def history(
+        self, token: str, serial: str, start_date: str, end_date: str, page: int, perpage: int
+    ) -> Any:
+        """Historical data of a SPH inverter (mix_data, at most 7 days)."""
+        return await self._request(
+            "POST",
+            "device/mix/mix_data",
+            token,
+            data={
+                "mix_sn": serial,
+                "start_date": start_date,
+                "end_date": end_date,
+                "page": page,
+                "perpage": perpage,
+            },
+        )
+
+    async def alarms(self, token: str, serial: str, date: str | None, page: int, perpage: int) -> Any:
+        """Alarm data of a SPH inverter (alarm_data)."""
+        form: dict[str, Any] = {"mix_sn": serial, "page": page, "perpage": perpage}
+        if date:
+            form["date"] = date
+        return await self._request("POST", "device/mix/alarm_data", token, data=form)
 
     async def plant_timezone(self, token: str, plant_id: str) -> float | None:
         """Time zone of the plant in hours, from plant/details ("GMT+1")."""
