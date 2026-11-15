@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -11,14 +11,14 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .api import GrowattData, GrowattDevice, GrowattError
-from .const import DOMAIN, SCAN_INTERVAL
+from .const import DOMAIN
 from .source import SourceController
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class GrowattWebCoordinator(DataUpdateCoordinator[GrowattData]):
-    """Polls Growatt every SCAN_INTERVAL through the SourceController.
+    """Polls Growatt every update_interval (integration options) through the SourceController.
 
     The controller reads the official API with a token and falls back to the
     web portal (see docs/superpowers/specs/2026-11-14-openapi-token-design.md).
@@ -32,13 +32,14 @@ class GrowattWebCoordinator(DataUpdateCoordinator[GrowattData]):
         entry: ConfigEntry,
         source: SourceController,
         device: GrowattDevice,
+        update_interval: timedelta,
     ) -> None:
         super().__init__(
             hass,
             _LOGGER,
             config_entry=entry,
             name=DOMAIN,
-            update_interval=SCAN_INTERVAL,
+            update_interval=update_interval,
         )
         self.source = source
         self.device = device
