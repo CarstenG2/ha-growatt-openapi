@@ -116,3 +116,61 @@ async def test_services_yaml_parses_with_every_field(hass, entry):
         fields = descriptions[name]["fields"]
         assert all(isinstance(k, str) for k in fields), name
         assert {str(k) for k in service.schema.schema} == set(fields), name
+
+
+async def test_default_poll_intervals(hass, entry):
+    from datetime import timedelta
+
+    coordinator = entry.runtime_data
+    assert coordinator.update_interval == timedelta(minutes=10)
+    assert coordinator.source._settings_interval == 3600
+
+
+async def test_options_flow_sets_intervals_and_reloads(hass, entry):
+    from datetime import timedelta
+
+    from homeassistant.data_entry_flow import FlowResultType
+
+    import probatio
+    from homeassistant.helpers import config_validation as cv
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] is FlowResultType.FORM
+    # The frontend gets the form through this serializer (helpers/data_entry_flow.py); defaults are the built-in values.
+    fields = {
+        f["name"]: f
+        for f in probatio.to_field_list(result["data_schema"], custom_serializer=cv.custom_serializer)
+    }
+    assert fields["live_interval"]["default"] == 10
+    assert fields["settings_interval"]["default"] == 60
+    assert fields["live_interval"]["selector"]["number"]["min"] == 5
+    assert fields["settings_interval"]["selector"]["number"]["max"] == 1440
+    with patch(
+        "custom_components.growatt_web.source.SourceController.fetch",
+        AsyncMock(return_value=_data()),
+    ):
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"live_interval": 5, "settings_interval": 30}
+        )
+        await hass.async_block_till_done()
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options == {"live_interval": 5, "settings_interval": 30}
+    assert entry.runtime_data.update_interval == timedelta(minutes=5)
+    assert entry.runtime_data.source._settings_interval == 1800
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        {"live_interval": 4, "settings_interval": 60},
+        {"live_interval": 61, "settings_interval": 60},
+        {"live_interval": 10, "settings_interval": 29},
+        {"live_interval": 10, "settings_interval": 1441},
+    ],
+)
+async def test_options_flow_rejects_out_of_range(hass, entry, values):
+    import voluptuous as vol
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    with pytest.raises(vol.Invalid):
+        await hass.config_entries.options.async_configure(result["flow_id"], values)

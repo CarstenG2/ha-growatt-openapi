@@ -8,7 +8,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .api import GrowattDevice, GrowattWebClient
-from .const import CONF_API_TOKEN, CONF_MODEL, CONF_PLANT_ID, CONF_SERIAL
+from .const import (
+    CONF_API_TOKEN,
+    CONF_MODEL,
+    CONF_PLANT_ID,
+    CONF_SERIAL,
+    live_interval,
+    settings_interval_seconds,
+)
 from .coordinator import GrowattWebCoordinator
 from .openapi import OpenApiClient
 from .services import async_register_services
@@ -34,9 +41,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: GrowattWebConfigEntry) -
         hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_API_TOKEN: token})
 
     source = SourceController(
-        client, OpenApiClient(session), device, entry.data.get(CONF_API_TOKEN), save_token
+        client,
+        OpenApiClient(session),
+        device,
+        entry.data.get(CONF_API_TOKEN),
+        save_token,
+        settings_interval=settings_interval_seconds(entry.options),
     )
-    coordinator = GrowattWebCoordinator(hass, entry, source, device)
+    coordinator = GrowattWebCoordinator(hass, entry, source, device, live_interval(entry.options))
     # Not async_config_entry_first_refresh: a failed first poll would make Home
     # Assistant retry the whole setup within seconds, with a fresh controller and
     # a fresh portal login each time. A failed poll leaves the sensors unavailable;
@@ -45,7 +57,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: GrowattWebConfigEntry) -
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     async_register_services(hass)
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
+
+
+async def _async_options_updated(hass: HomeAssistant, entry: GrowattWebConfigEntry) -> None:
+    """New poll intervals take effect through a reload."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: GrowattWebConfigEntry) -> bool:

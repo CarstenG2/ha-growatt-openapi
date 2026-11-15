@@ -90,10 +90,11 @@ class Clock:
         return self.now
 
 
-def make(token="T1", portal=None, api_=None, clock=None):
+def make(token="T1", portal=None, api_=None, clock=None, **kwargs):
     saved = []
     ctrl = source.SourceController(
-        portal or FakePortal(), api_ or FakeApi(), DEVICE, token, saved.append, clock or Clock()
+        portal or FakePortal(), api_ or FakeApi(), DEVICE, token, saved.append, clock or Clock(),
+        **kwargs,
     )
     return ctrl, saved
 
@@ -301,7 +302,7 @@ async def test_restart_with_dead_own_token_generates_at_most_once():
     assert portal.resets == 1
 
 
-async def test_settings_read_with_first_poll_then_every_30_minutes():
+async def test_settings_read_with_first_poll_then_every_60_minutes_by_default():
     clock = Clock()
     api_ = FakeApi()
     ctrl, _ = make(api_=api_, clock=clock)
@@ -312,7 +313,23 @@ async def test_settings_read_with_first_poll_then_every_30_minutes():
     data = await ctrl.fetch()
     assert len(api_.info_calls) == 1
     assert data.settings["chargePowerCommand"] == 20  # cached values stay
-    clock.now += 1500
+    clock.now += 3299
+    await ctrl.fetch()
+    assert len(api_.info_calls) == 1
+    clock.now += 1
+    await ctrl.fetch()
+    assert len(api_.info_calls) == 2
+
+
+async def test_settings_interval_from_options():
+    clock = Clock()
+    api_ = FakeApi()
+    ctrl, _ = make(api_=api_, clock=clock, settings_interval=1800)
+    await ctrl.fetch()
+    clock.now += 1799
+    await ctrl.fetch()
+    assert len(api_.info_calls) == 1
+    clock.now += 1
     await ctrl.fetch()
     assert len(api_.info_calls) == 2
 
@@ -338,7 +355,7 @@ async def test_failed_settings_read_keeps_poll_and_last_values():
     ctrl, _ = make(api_=api_, clock=clock)
     await ctrl.fetch()
     api_.info_fail = api.GrowattError("10012")
-    clock.now += 1800
+    clock.now += 3600
     data = await ctrl.fetch()
     assert data.settings["chargePowerCommand"] == 20
 

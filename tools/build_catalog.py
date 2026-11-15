@@ -224,7 +224,7 @@ def write_reference(live: list[dict], settings: list[dict]) -> None:
         "same response on an SPH 10000TL3 BH-UP; *doc* = the official description names the quantity and the",
         "unit follows the measured fields of the same kind. Fields without a unit are shown as raw values.",
         "",
-        "## Live data (`mix_last_data`, every 5 minutes)",
+        "## Live data (`mix_last_data`, every live interval, default 10 minutes)",
         "",
         f"{len(live)} fields. Enabled by default: the fields marked **on**; all others are created disabled",
         "and can be enabled under *Settings > Devices & services > Growatt OpenAPI > Entities*.",
@@ -242,7 +242,7 @@ def write_reference(live: list[dict], settings: list[dict]) -> None:
         )
     out += [
         "",
-        "## Settings (`mix_data_info`, every 30 minutes)",
+        "## Settings (`mix_data_info`, every settings interval, default 60 minutes)",
         "",
         f"{len(settings)} fields, all created disabled, shown as diagnostic entities with the raw value.",
         "",

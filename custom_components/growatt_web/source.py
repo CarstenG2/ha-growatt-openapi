@@ -20,9 +20,10 @@ MODE_API = "api"
 MODE_PORTAL = "portal"
 # Waits before the next token recovery attempt after a failed one (seconds).
 RECOVERY_DELAYS = (300, 600, 1200, 2400, 3600)
-# Settings (mix_data_info) are read every SETTINGS_INTERVAL and again after a write,
-# but never twice within RATE_LIMIT (Growatt allows one call per endpoint per 5 min).
-SETTINGS_INTERVAL = 1800
+# Settings (mix_data_info) are read every settings interval (integration options,
+# default SETTINGS_INTERVAL) and again after a write, but never twice within
+# RATE_LIMIT (Growatt allows one call per endpoint per 5 min).
+SETTINGS_INTERVAL = 3600
 RATE_LIMIT = 300
 
 
@@ -37,6 +38,7 @@ class SourceController:
         token: str | None,
         save_token: Callable[[str], None],
         clock: Callable[[], float] = time.monotonic,
+        settings_interval: float = SETTINGS_INTERVAL,
     ) -> None:
         self._portal = portal
         self._openapi = openapi
@@ -44,6 +46,7 @@ class SourceController:
         self._token = token or None
         self._save_token = save_token
         self._clock = clock
+        self._settings_interval = settings_interval
         self._mode = MODE_API
         self._dead: str | None = None
         self._own_token: str | None = None
@@ -94,7 +97,7 @@ class SourceController:
         now = self._clock()
         if now - self._settings_read_at < RATE_LIMIT:
             return
-        if not self._settings_due and now - self._settings_read_at < SETTINGS_INTERVAL:
+        if not self._settings_due and now - self._settings_read_at < self._settings_interval:
             return
         self._settings_read_at = now
         try:

@@ -17,5 +17,21 @@
     "abort": {
       "already_configured": "This inverter is already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Poll intervals",
+        "description": "Growatt allows one request per endpoint every 5 minutes, and the datalogger uploads new values every 5 minutes.",
+        "data": {
+          "live_interval": "Live data (minutes, 5-60)",
+          "settings_interval": "Settings (minutes, 30-1440)"
+        },
+        "data_description": {
+          "live_interval": "How often the live values are read. Default 10.",
+          "settings_interval": "How often the inverter settings are read; they are also read after every write. Default 60."
+        }
+      }
+    }
   }
 }

@@ -8,7 +8,7 @@ Unit source: *measured* = compared with the Growatt portal or checked against ot
 same response on an SPH 10000TL3 BH-UP; *doc* = the official description names the quantity and the
 unit follows the measured fields of the same kind. Fields without a unit are shown as raw values.
 
-## Live data (`mix_last_data`, every 5 minutes)
+## Live data (`mix_last_data`, every live interval, default 10 minutes)
 
 224 fields. Enabled by default: the fields marked **on**; all others are created disabled
 and can be enabled under *Settings > Devices & services > Growatt OpenAPI > Entities*.
@@ -242,7 +242,7 @@ the catalog existed, so their history stays continuous.
 | `warnText` | off |  |  | *unknown* | - |  |
 | `withTime` | off |  |  | Does the sent data contain time? | official doc |  |
 
-## Settings (`mix_data_info`, every 30 minutes)
+## Settings (`mix_data_info`, every settings interval, default 60 minutes)
 
 200 fields, all created disabled, shown as diagnostic entities with the raw value.
 

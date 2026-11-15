@@ -62,6 +62,17 @@ username and password of your Growatt account (`server.growatt.com`). The integr
 the inverter, reads the API token and starts polling. Credentials and token are kept in Home
 Assistant's config entry storage, like for any other integration.
 
+### Options
+
+**Growatt OpenAPI** -> **Configure** sets the poll intervals:
+
+| Option | Default | Range |
+|---|---|---|
+| Live data | 10 minutes | 5-60 minutes |
+| Settings | 60 minutes | 30 minutes - 24 hours |
+
+The settings are also read again after every write. Saving the options reloads the integration.
+
 ## Entities
 
 - **Enabled after setup:** the 26 most important live values (PV, battery, grid, load powers
@@ -106,10 +117,11 @@ with an error message.
 
 ## How it works
 
-- **Polling:** every 5 minutes one live data request (`mix_last_data`); the settings
-  (`mix_data_info`) every 30 minutes and again after a write. Growatt allows one request per
-  endpoint every 5 minutes, and the datalogger uploads new values every 5 minutes, so polling
-  more often brings no new data.
+- **Polling:** one live data request (`mix_last_data`) per live interval, default every 10
+  minutes; the settings (`mix_data_info`) per settings interval, default every 60 minutes, and
+  again after a write. Each request returns all fields of its endpoint. Growatt allows one
+  request per endpoint every 5 minutes, and the datalogger uploads new values every 5 minutes,
+  so 5 minutes is the shortest interval.
 - **Token:** read through a portal login at setup and stored in the config entry. In normal
   operation there is no portal login at all.
 - **Dead token:** only a valid Growatt answer "no privilege" (error 10011) or an empty plant
