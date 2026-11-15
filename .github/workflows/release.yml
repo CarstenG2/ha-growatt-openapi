@@ -1,0 +1,35 @@
+name: Release
+
+# Creates a GitHub release when a merge to main changes the version in manifest.json.
+# HACS uses the tag of the latest release as the version of the integration.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - custom_components/growatt_web/manifest.json
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release for the manifest version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(jq -r .version custom_components/growatt_web/manifest.json)
+          if [ -z "$version" ] || [ "$version" = "null" ]; then
+            echo "::error::manifest.json has no version"
+            exit 1
+          fi
+          tag="v$version"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists, nothing to do"
+            exit 0
+          fi
+          gh release create "$tag" --target "$GITHUB_SHA" --title "$tag" --generate-notes
