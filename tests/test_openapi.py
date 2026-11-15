@@ -13,6 +13,7 @@ LAST = {
     "pacToGridTotal": 10, "pacToUserTotal": 0, "plocalLoadTotal": 280, "ppv": 1039.1,
     "vpv1": 337, "ppv1": 478.4, "vpv2": 390.20001220703125, "ppv2": 560.7,
     "vac1": 395.8999938964844, "fac": 49.9900016784668, "status": 5,
+    "bmsMaxCurr": 25, "bmsBatteryCurr": -3.0999999046325684, "bmsBatteryTemp": 26.299999237060547,
     "elocalLoadToday": 1.9, "epvtoday": 1.100000023841858, "epvTotal": 30620.300000000003,
     "etoGridToday": 0, "etogridTotal": 20516.6, "edischarge1Today": 1.4,
     "edischarge1Total": 4366.4, "elocalLoadTotal": 9853.9, "time": "2026-11-14 10:06:44",
@@ -101,6 +102,9 @@ def test_mapping_matches_portal_snapshot():
     assert data.status["vAc1"] == 395.9
     assert data.status["fAc"] == 49.99
     assert data.status["status"] == "5"
+    assert data.status["bmsMaxCurr"] == 25
+    assert data.status["bmsBatteryCurr"] == -3.1
+    assert data.status["bmsBatteryTemp"] == 26.3
     assert data.day_totals == {"elocalLoad": 1.9}
     assert data.totals == {
         "epvToday": 1.1, "epvTotal": 30620.3, "etoGridToday": 0, "etogridTotal": 20516.6,

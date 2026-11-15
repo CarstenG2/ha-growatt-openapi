@@ -38,6 +38,11 @@ STATUS_FIELDS: dict[str, tuple[str, float]] = {
     "ppv2": ("pPv2", 1),
     "vac1": ("vAc1", 1),
     "fac": ("fAc", 1),
+    # Battery management (BMS) values, API mode only: charge current limit (A),
+    # battery current (A, negative = discharging) and BMS battery temperature (degC).
+    "bmsMaxCurr": ("bmsMaxCurr", 1),
+    "bmsBatteryCurr": ("bmsBatteryCurr", 1),
+    "bmsBatteryTemp": ("bmsBatteryTemp", 1),
 }
 DAY_FIELDS: dict[str, str] = {"elocalLoadToday": "elocalLoad"}
 TOTAL_FIELDS: dict[str, str] = {

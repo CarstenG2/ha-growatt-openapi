@@ -21,10 +21,12 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import (
     PERCENTAGE,
+    UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -131,6 +133,10 @@ SENSORS: tuple[GrowattSensorDescription, ...] = (
     _live("pPv2", None, None),
     _live("vAc1", SensorDeviceClass.VOLTAGE, V),
     _live("fAc", SensorDeviceClass.FREQUENCY, UnitOfFrequency.HERTZ),
+    # Battery management values; only delivered in API operation.
+    _live("bmsMaxCurr", SensorDeviceClass.CURRENT, UnitOfElectricCurrent.AMPERE),
+    _live("bmsBatteryCurr", SensorDeviceClass.CURRENT, UnitOfElectricCurrent.AMPERE),
+    _live("bmsBatteryTemp", SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS),
     # Raw inverter status code as delivered (e.g. "5", "6"); text mapping unknown.
     GrowattSensorDescription(
         key="status",
