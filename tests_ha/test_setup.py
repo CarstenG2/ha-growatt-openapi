@@ -103,3 +103,16 @@ async def test_read_parameter_returns_response(hass, entry):
             DOMAIN, "read_parameter", {"param_id": "pv_on_off"}, blocking=True, return_response=True
         )
     assert result == {"data": "1"}
+
+
+async def test_services_yaml_parses_with_every_field(hass, entry):
+    """Home Assistant must read services.yaml; each action lists every schema field by name."""
+    from homeassistant.helpers.service import async_get_all_descriptions
+
+    descriptions = (await async_get_all_descriptions(hass))[DOMAIN]
+    services = hass.services.async_services()[DOMAIN]
+    assert set(descriptions) == set(services)
+    for name, service in services.items():
+        fields = descriptions[name]["fields"]
+        assert all(isinstance(k, str) for k in fields), name
+        assert {str(k) for k in service.schema.schema} == set(fields), name

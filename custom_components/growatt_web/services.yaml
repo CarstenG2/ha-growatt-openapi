@@ -208,7 +208,7 @@ set_inverter_on_off:
       selector:
         config_entry:
           integration: "growatt_web"
-    on:
+    "on":
       name: "On"
       description: "Inverter on"
       required: true

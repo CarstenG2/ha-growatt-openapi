@@ -53,14 +53,22 @@ def yaml_value(value, indent: int) -> list[str]:
         lines = []
         for k, v in value.items():
             if isinstance(v, (dict, list)) and v:
-                lines.append(f"{pad}{k}:")
+                lines.append(f"{pad}{key(k)}:")
                 lines += yaml_value(v, indent + 2)
             else:
-                lines.append(f"{pad}{k}: {scalar(v)}")
+                lines.append(f"{pad}{key(k)}: {scalar(v)}")
         return lines
     if isinstance(value, list):
         return [f"{pad}- {scalar(v)}" for v in value]
     return [pad + scalar(value)]
+
+
+# YAML 1.1 (used by Home Assistant) reads these unquoted keys as booleans.
+YAML_BOOL_WORDS = {"y", "n", "yes", "no", "on", "off", "true", "false"}
+
+
+def key(k) -> str:
+    return f'"{k}"' if str(k).lower() in YAML_BOOL_WORDS else str(k)
 
 
 def scalar(v) -> str:
