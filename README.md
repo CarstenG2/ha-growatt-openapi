@@ -42,6 +42,9 @@ Credentials are stored by Home Assistant in its config entry storage, like any o
 | vPv1, vPv2 | PV string voltage | V |
 | pPv1, pPv2 | PV string power | not yet verified, no unit |
 | vAc1 | grid voltage | V |
+| bmsMaxCurr | battery charge current limit from the battery management (API operation only) | A |
+| bmsBatteryCurr | battery current, negative while discharging (API operation only) | A |
+| bmsBatteryTemp | battery temperature from the battery management (API operation only) | °C |
 | fAc | grid frequency | Hz |
 | status | inverter status, raw value | |
 | etouser | grid import today, portal value (on 2026-11-13 it matched gridPowerToday, not the app's "purchased energy") | kWh |
